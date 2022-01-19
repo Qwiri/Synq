@@ -1,101 +1,60 @@
 <script lang="ts">
-	let video: HTMLVideoElement;
-	let noSeek = false;
-	let paused = true;
+	import Chat from "./components/elements/Chat.svelte";
+	import VideoWrapper from "./components/elements/VideoWrapper.svelte";
+	import Swal from 'sweetalert2';
+	import { onMount } from "svelte";
+	import { username, ws } from "./store";
 
-	let nono: Set<string> = new Set();
+	let connected = false;
 
-	interface Data {
-		key: string;
-	}
+	onMount(() => {
 
-	interface SeekData {
-		key: string;
-		time: number;
-	}
+		// get username
+		Swal.fire({
+			title: 'Please enter a username:',
+			icon: 'question',
+			confirmButtonText: 'Cool',
+			input: "text",
+			background: "#181818",
+			inputValidator: input => (!input && "You need to enter something")
+		}).then(result => {
+			$username = result.value;
+			$ws = new WebSocket("ws://127.0.0.1:8080/socket/1");
+			connected = true;
 
-	const ws = new WebSocket("ws://127.0.0.1:8080/socket/1");
-	ws.onopen = () => {
-		console.log("connected");
-	};
-	ws.onerror = (e) => {
-		console.log("error", e);
-	};
-	ws.onmessage = (event: MessageEvent<string>) => {
-		console.log("got message:", event.data);
-		const data = JSON.parse(event.data) as Data;
-		switch (data.key) {
-			case "PAUSE":
-				nono.add("PAUSE");
-				video.pause();
-				break;
-			case "PLAY":
-				nono.add("PLAY");
-				video.play();
-				break;
-			case "SEEKED":
-				nono.add("PAUSE");
-				video.pause();
-				nono.add("SEEKED");
-				video.currentTime = (data as SeekData).time;
-				break;
-		}
-	};
+		})
 
-	function send(data: Data | SeekData, all = false) {
-		ws.send((all ? "!" : "") + JSON.stringify(data));
-	}
 
-	function onPause() {
-		paused = true;
+	})
 
-		if (nono.has("PAUSE")) {
-			nono.delete("PAUSE");
-			return;
-		}
-		console.log("on Pause");
-		send({ key: "PAUSE" });
-	}
-
-	function onPlay(event) {
-		paused = false;
-
-		if (nono.has("PLAY")) {
-			nono.delete("PLAY");
-			return;
-		}
-		console.log("on Play");
-		send({ key: "PLAY" });
-	}
-
-	function onSeeked(event) {
-		if (nono.has("SEEKED")) {
-			nono.delete("SEEKED");
-			return;
-		}
-
-		console.log("on Seeked");
-		send({ key: "SEEKED", time: video.currentTime });
-		if (!paused) {
-			send({ key: "PLAY" }, true);
-		}
-	}
 </script>
 
 <main>
-	<!-- create video with caption track -->
-	<video
-		bind:this={video}
-		on:pause={onPause}
-		on:play={onPlay}
-		on:seeked={onSeeked}
-		id="video"
-		width="640"
-		height="360"
-		controls
-		autoplay
-	>
-		<source src="/assets/video.mp4" type="video/mp4" />
-		<track kind="captions" label="English" src="" />
-	</video>
+	{#if connected}
+		<VideoWrapper />
+		<Chat />
+	{/if}
 </main>
+
+<style lang="scss">
+
+	main {
+		display: flex;
+		width: 100vw;
+		max-width: 100%;
+		height: 100vh;
+
+		* {
+			flex-shrink: 0;
+		}
+
+		:global(#videoComponentWrapper) {
+			width: 75vw;
+
+		}
+		:global(#chatWrapper) {
+			width: 25vw;
+		}
+	}
+
+</style>

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"github.com/qwiri/parti/internal/handlers"
+	"github.com/qwiri/parti/pkg/handler"
+	"github.com/qwiri/parti/pkg/model"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -21,6 +25,12 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 }
 
+var rooms map[int]*model.Room
+
+var wsRouters = map[string]*handler.Handler{
+	"JOIN": handlers.JoinHandler,
+}
+
 func onMessage(conn *websocket.Conn, data []byte) (err error) {
 	if len(data) == 0 {
 		return
@@ -30,17 +40,26 @@ func onMessage(conn *websocket.Conn, data []byte) (err error) {
 		all = true
 		data = []byte(string(data)[1:])
 	}
-
+	cmd := strings.Split(string(data), " ")[0]
 	log.Infof("[ws] got message from client: %s", string(data))
-	for client := range clients {
-		if client == conn && !all {
-			continue
+
+	r, ok := wsRouters[cmd]
+	if !ok {
+		log.Infof("Could not find a handler for command '%s', continuing with default logic", cmd)
+		for client := range clients {
+			if client == conn && !all {
+				continue
+			}
+			if err = client.WriteMessage(websocket.TextMessage, data); err != nil {
+				return
+			}
 		}
-		if err = client.WriteMessage(websocket.TextMessage, data); err != nil {
-			return
-		}
+		return nil
 	}
+
+	r.Handler(conn)
 	return nil
+
 }
 
 func main() {

@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"github.com/gofiber/websocket/v2"
-	"github.com/qwiri/parti/pkg/handler"
 	"log"
+
+	"github.com/Qwiri/Synq/pkg/handler"
+	"github.com/gofiber/websocket/v2"
 )
 
 var JoinHandler = &handler.Handler{

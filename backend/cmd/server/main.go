@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/qwiri/parti/internal/handlers"
-	"github.com/qwiri/parti/pkg/handler"
-	"github.com/qwiri/parti/pkg/model"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/Qwiri/Synq/internal/handlers"
+	"github.com/Qwiri/Synq/pkg/handler"
+	"github.com/Qwiri/Synq/pkg/model"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"

@@ -1,9 +1,12 @@
-name: "🦑 Publish to GitHub Pages"
+name: "📦🔰 Publish to GitHub Pages"
 
 on:
   push:
     branches:
       - main
+    paths:
+    - 'frontend/**'
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -14,7 +17,7 @@ jobs:
 
       - name: Build Frontend
         run: |
-          # cd frontend
+          cd frontend
           npm install --save-dev
           npm run build
           cp -rf public ./dist

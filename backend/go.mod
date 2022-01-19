@@ -1,4 +1,4 @@
-module github.com/qwiri/parti
+module github.com/Qwiri/Synq
 
 go 1.17
 

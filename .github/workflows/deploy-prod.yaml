@@ -1,0 +1,27 @@
+name: "🦑 Publish to GitHub Pages"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Build Frontend
+        run: |
+          # cd frontend
+          npm install --save-dev
+          npm run build
+          cp -rf public ./dist
+
+      - name: Deploy Frontend to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          cname: synq.tv

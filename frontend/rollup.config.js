@@ -6,6 +6,8 @@ import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
+import replace from "@rollup/plugin-replace";
+import json from '@rollup/plugin-json';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -30,6 +32,16 @@ function serve() {
 	};
 }
 
+function devStagingProd(dev, staging, prod) {
+	if (process.env.BUILD == "development") {
+		return dev;
+	}
+	if (process.env.BUILD == "staging") {
+		return staging;
+	}
+	return prod;
+}
+
 export default {
 	input: 'src/main.ts',
 	output: {
@@ -39,6 +51,25 @@ export default {
 		file: 'public/build/bundle.js'
 	},
 	plugins: [
+		json(),
+		replace({
+			"replacemeGitVersion": (process.env.BRANCH ||
+				require('child_process')
+					.execSync('git rev-parse --abbrev-ref HEAD')
+					.toString().trim()
+			) + ":" + (
+					require('child_process')
+						.execSync('git rev-parse --short HEAD')
+						.toString().trim()
+				),
+			"http://127.0.0.1:8080": devStagingProd("http://127.0.0.1:8080", "https://backend.staging.synq.tv", "https://backend.prod.synq.tv"),
+			"127.0.0.1:8080": devStagingProd("127.0.0.1:8080", "backend.staging.synq.tv", "backend.prod.synq.tv"),
+			"http://localhost:8080": devStagingProd("http://localhost:8080", "https://backend.staging.synq.tv", "https://backend.prod.synq.tv"),
+			"localhost:8080": devStagingProd("localhost:8080", "backend.staging.synq.tv", "backend.prod.synq.tv"),
+
+			"ws://localhost:8080": devStagingProd("ws://localhost:8080", "wss://backend.staging.synq.tv", "wss://backend.prod.synq.tv"),
+			"ws://127.0.0.1:8080": devStagingProd("ws://127.0.0.1:8080", "wss://backend.staging.synq.tv", "wss://backend.prod.synq.tv"),
+		}),
 		svelte({
 			preprocess: sveltePreprocess({ sourceMap: !production }),
 			compilerOptions: {

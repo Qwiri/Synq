@@ -20,7 +20,7 @@ jobs:
           cd frontend
           npm install --save-dev
           npm run build
-          cp -rf public ./dist
+          cp -rf build ./dist
 
       - name: Deploy Frontend to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
